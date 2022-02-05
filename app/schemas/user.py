@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 from app.schemas.item import Item
@@ -9,6 +10,10 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+
+
+class UserUpdate(UserBase):
+    password: Optional[str] = None
 
 
 class User(UserBase):
