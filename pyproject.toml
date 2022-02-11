@@ -9,6 +9,10 @@ python = "^3.9"
 fastapi = {extras = ["all"], version = "^0.73.0"}
 sqlmodel = "^0.0.6"
 mysqlclient = "^2.1.0"
+fastapi-users = {extras = ["sqlalchemy2"], version = "^9.2.4"}
+python-dotenv = "^0.19.2"
+psycopg2 = "^2.9.3"
+alembic = "^1.7.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
