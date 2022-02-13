@@ -6,6 +6,7 @@ Create the virtualenv inside the project’s root directory.
 
 ```
 poetry config virtualenvs.in-project true
+poetry config virtualenvs.create true
 ```
 
 [virtualenvs.in-project](https://python-poetry.org/docs/configuration/#virtualenvsin-project)
@@ -20,6 +21,12 @@ The install command reads the pyproject.toml file from the current project, reso
 
 ```
 poetry install
+```
+
+if Installing mysqlclient: Failed
+
+```
+sudo apt-get install python3.9-dev libmysqlclient-dev
 ```
 
 ## How to use it
