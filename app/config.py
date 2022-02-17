@@ -14,6 +14,8 @@ class DataBase(BaseModel):
 
 class Setting(BaseSettings):
     database: DataBase
+    SECRET_KEY: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
 
     class Config:
         env_file = '.env'

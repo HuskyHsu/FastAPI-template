@@ -4,6 +4,15 @@ from pydantic import BaseModel, EmailStr
 # from app.schemas.item import Item
 
 
+class UserInLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserCreate(UserInLogin):
+    name: str
+
+
 class UserBase(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
@@ -11,11 +20,6 @@ class UserBase(BaseModel):
     is_staff: bool = False
     is_active: Optional[bool] = True
     is_superuser: bool = False
-
-
-class UserCreate(UserBase):
-    email: EmailStr
-    password: str
 
 
 class UserUpdate(UserBase):
