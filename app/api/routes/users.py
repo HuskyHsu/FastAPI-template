@@ -18,14 +18,14 @@ def create_user(user_in: schemas.UserCreate, db: Session = Depends(deps.get_db))
     return user
 
 
-@router.get("/me", response_model=schemas.User)
+@router.get("/me", response_model=schemas.UserResponse)
 def read_user_me(
     current_user: models.User = Depends(deps.get_current_active_user),
 ) -> Any:
     """
     Get current user.
     """
-    return current_user
+    return schemas.UserResponse.from_orm(current_user)
 
 
 # @router.get("", response_model=list[schemas.User])

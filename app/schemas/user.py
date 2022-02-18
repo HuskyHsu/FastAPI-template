@@ -13,6 +13,15 @@ class UserCreate(UserInLogin):
     name: str
 
 
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
 class UserBase(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
