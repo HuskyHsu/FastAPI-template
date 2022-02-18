@@ -1,5 +1,6 @@
 from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from app import crud, models, schemas
@@ -8,14 +9,14 @@ from app.api import deps
 router = APIRouter()
 
 
-@router.post("", response_model=schemas.User, name="register")
+@router.post("", response_model=schemas.UserResponse, name="register")
 def create_user(user_in: schemas.UserCreate, db: Session = Depends(deps.get_db)) -> Any:
     user = crud.user.get_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(status_code=400, detail="Email already registered")
     user = crud.user.create(db=db, obj_in=user_in)
     # send_new_account_email
-    return user
+    return schemas.UserResponse.from_orm(user)
 
 
 @router.get("/me", response_model=schemas.UserResponse)
@@ -27,6 +28,27 @@ def read_user_me(
     """
     return schemas.UserResponse.from_orm(current_user)
 
+
+@router.put("/me", response_model=schemas.UserResponse)
+def update_user_me(
+    *,
+    db: Session = Depends(deps.get_db),
+    user_update: schemas.UserUpdate,
+    current_user: models.User = Depends(deps.get_current_active_user),
+) -> Any:
+    """
+    Update own user.
+    """
+    current_user_data = jsonable_encoder(current_user)
+
+    user_in = schemas.UserUpdate(**current_user_data)
+    if user_update.password is not None:
+        user_in.password = user_update.password
+    if user_update.name is not None:
+        user_in.name = user_update.name
+
+    user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
+    return schemas.UserResponse.from_orm(user)
 
 # @router.get("", response_model=list[schemas.User])
 # def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_db)):
