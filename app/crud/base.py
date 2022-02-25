@@ -31,7 +31,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     def get(self, db: Session, id: Any) -> Optional[ModelType]:
         stmt = select(self.model).where(self.model.id == id).slice(0, 1)
         row = db.execute(stmt).first()
-        return row[0]
+        return None if row is None else row[0]
 
     def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100

@@ -20,8 +20,11 @@ def create_user(user_in: schemas.UserCreate, db: Session = Depends(deps.get_db))
 
 
 @router.get("", response_model=list[schemas.UserResponse])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_db)):
-    # TODO: admin user can use
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_db),
+               current_user: models.User = Depends(deps.get_current_active_user)):
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
     users = crud.user.get_multi(db, skip=skip, limit=limit)
     return [schemas.UserResponse.from_orm(user) for user in users]
 
@@ -58,12 +61,17 @@ def update_user_me(
     return schemas.UserResponse.from_orm(user)
 
 
-# @router.get("/{user_id}", response_model=schemas.User)
-# def read_user(user_id: int, db: Session = Depends(deps.get_db)):
-#     db_user = crud.user.get(db, id=user_id)
-#     if db_user is None:
-#         raise HTTPException(status_code=404, detail="User not found")
-#     return db_user
+@router.get("/{user_id}", response_model=schemas.UserResponse)
+def read_user(user_id: int, db: Session = Depends(deps.get_db),
+              current_user: models.User = Depends(deps.get_current_active_user)):
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    user = crud.user.get(db, id=user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return schemas.UserResponse.from_orm(user)
 
 
 # @router.post("/{user_id}/items", response_model=schemas.Item)
