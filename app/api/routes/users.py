@@ -14,9 +14,16 @@ def create_user(user_in: schemas.UserCreate, db: Session = Depends(deps.get_db))
     user = crud.user.get_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    user = crud.user.create(db=db, obj_in=user_in)
-    # send_new_account_email
+    user = crud.user.create_user(db=db, obj_in=user_in)
+    # TODO: send_new_account_email
     return schemas.UserResponse.from_orm(user)
+
+
+@router.get("", response_model=list[schemas.UserResponse])
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_db)):
+    # TODO: admin user can use
+    users = crud.user.get_multi(db, skip=skip, limit=limit)
+    return [schemas.UserResponse.from_orm(user) for user in users]
 
 
 @router.get("/me", response_model=schemas.UserResponse)
@@ -47,13 +54,8 @@ def update_user_me(
     if user_update.name is not None:
         user_in.name = user_update.name
 
-    user = crud.user.update(db, db_obj=current_user, obj_in=user_in)
+    user = crud.user.update_user(db, user_id=current_user.id, obj_in=user_in)
     return schemas.UserResponse.from_orm(user)
-
-# @router.get("", response_model=list[schemas.User])
-# def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_db)):
-#     users = crud.user.get_multi(db, skip=skip, limit=limit)
-#     return users
 
 
 # @router.get("/{user_id}", response_model=schemas.User)
