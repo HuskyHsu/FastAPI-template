@@ -7,4 +7,4 @@ from app.config import settings
 SQLALCHEMY_DATABASE_URL = f"postgresql+asyncpg://{settings.database.get_sql_url()}"
 
 engine = create_async_engine(SQLALCHEMY_DATABASE_URL)
-SessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

@@ -1,7 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr
-
-# from app.schemas.item import Item
+import uuid
+from fastapi_users import schemas
 
 
 class UserBase(BaseModel):
@@ -39,4 +39,16 @@ class UserInDB(UserCreate):
 
 
 class User(UserCreate):
+    pass
+
+
+class UserRead(schemas.BaseUser[uuid.UUID]):
+    pass
+
+
+class UserCreate(schemas.BaseUserCreate):
+    pass
+
+
+class UserUpdate(schemas.BaseUserUpdate):
     pass

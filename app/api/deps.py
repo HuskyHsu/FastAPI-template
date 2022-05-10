@@ -8,18 +8,15 @@ from pydantic import ValidationError
 
 from app import crud, models, schemas
 from app.config import settings
-from app.db.session import SessionLocal
+from app.db.session import async_session_maker
 from app.core import security
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"/login")
 
 
 async def get_db() -> Generator:
-    try:
-        async with SessionLocal() as session:
-            yield session
-    finally:
-        await session.close()
+    async with async_session_maker() as session:
+        yield session
 
 
 async def get_current_user(
