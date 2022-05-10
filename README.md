@@ -29,6 +29,12 @@ if Installing mysqlclient: Failed
 sudo apt-get install python3.9-dev libmysqlclient-dev
 ```
 
+database
+
+```
+docker-compose -f docker/docker-compose.yml up -d
+```
+
 ## How to use it
 
 ```

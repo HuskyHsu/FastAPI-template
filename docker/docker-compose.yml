@@ -1,18 +1,16 @@
-# Use root/example as user/password credentials
-version: '3.1'
+version: "3.1"
 
 services:
   db:
-    image: mysql:8
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
+    container_name: css_db
+    image: postgres:14
+    # restart: always
     ports:
-      - 3308:3306
+      - 5433:5432
     environment:
-      MYSQL_DATABASE: css
-      MYSQL_USER: dev
-      MYSQL_PASSWORD: password
-      MYSQL_ROOT_PASSWORD: password
+      POSTGRES_DB: css
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
 
   # adminer:
   #   image: adminer
