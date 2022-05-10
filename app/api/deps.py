@@ -11,20 +11,18 @@ from app.config import settings
 from app.db.session import SessionLocal
 from app.core import security
 
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl=f"/login"
-)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"/login")
 
 
-def get_db() -> Generator:
+async def get_db() -> Generator:
     try:
-        db = SessionLocal()
-        yield db
+        async with SessionLocal() as session:
+            yield session
     finally:
-        db.close()
+        await session.close()
 
 
-def get_current_user(
+async def get_current_user(
     db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)
 ) -> models.User:
     try:
@@ -38,11 +36,11 @@ def get_current_user(
             detail="Could not validate credentials",
         )
 
-    user = crud.user.get(db, id=token_data.sub)
+    user = await crud.user.get(db, id=token_data.sub)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    crud.user.update_last_login(db, user)
+    # await crud.user.update_last_login(db, user)
     return user
 
 

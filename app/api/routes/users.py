@@ -10,22 +10,28 @@ router = APIRouter()
 
 
 @router.post("", response_model=schemas.UserResponse, name="register")
-def create_user(user_in: schemas.UserCreate, db: Session = Depends(deps.get_db)) -> Any:
-    user = crud.user.get_by_email(db, email=user_in.email)
+async def create_user(
+    user_in: schemas.UserCreate, db: Session = Depends(deps.get_db)
+) -> Any:
+    user = await crud.user.get_by_email(db, email=user_in.email)
     if user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    user = crud.user.create_user(db=db, obj_in=user_in)
+    user = await crud.user.create_user(db=db, obj_in=user_in)
     # TODO: send_new_account_email
     return schemas.UserResponse.from_orm(user)
 
 
 @router.get("", response_model=list[schemas.UserResponse])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_db),
-               current_user: models.User = Depends(deps.get_current_active_user)):
+async def read_users(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+):
     if not current_user.is_superuser:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    users = crud.user.get_multi(db, skip=skip, limit=limit)
+    users = await crud.user.get_multi(db, skip=skip, limit=limit)
     return [schemas.UserResponse.from_orm(user) for user in users]
 
 
@@ -40,7 +46,7 @@ def read_user_me(
 
 
 @router.put("/me", response_model=schemas.UserResponse)
-def update_user_me(
+async def update_user_me(
     *,
     db: Session = Depends(deps.get_db),
     user_update: schemas.UserUpdate,
@@ -57,17 +63,20 @@ def update_user_me(
     if user_update.name is not None:
         user_in.name = user_update.name
 
-    user = crud.user.update_user(db, user_id=current_user.id, obj_in=user_in)
+    user = await crud.user.update_user(db, user_id=current_user.id, obj_in=user_in)
     return schemas.UserResponse.from_orm(user)
 
 
 @router.get("/{user_id}", response_model=schemas.UserResponse)
-def read_user(user_id: int, db: Session = Depends(deps.get_db),
-              current_user: models.User = Depends(deps.get_current_active_user)):
+async def read_user(
+    user_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_active_user),
+):
     if not current_user.is_superuser:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    user = crud.user.get(db, id=user_id)
+    user = await crud.user.get(db, id=user_id)
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
 

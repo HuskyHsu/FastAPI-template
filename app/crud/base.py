@@ -9,7 +9,7 @@ from sqlalchemy import select, insert, update
 from app.db.base_class import Base
 
 logging.basicConfig()
-logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
 ModelType = TypeVar("ModelType", bound=Base)
 CreateSchemaType = TypeVar("CreateSchemaType", bound=BaseModel)
@@ -28,47 +28,41 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         self.model = model
 
-    def get(self, db: Session, id: Any) -> Optional[ModelType]:
+    async def get(self, db: Session, id: Any) -> Optional[ModelType]:
         stmt = select(self.model).where(self.model.id == id).slice(0, 1)
-        row = db.execute(stmt).first()
+        result = await db.execute(stmt)
+        row = result.first()
         return None if row is None else row[0]
 
-    def get_multi(
+    async def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100
     ) -> List[ModelType]:
         stmt = select(self.model).order_by(self.model.id).slice(skip, limit)
-        return [row[0] for row in db.execute(stmt).all()]
+        result = await db.execute(stmt)
+        return [row[0] for row in result.all()]
 
-    def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
+    async def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
         obj_in_data = jsonable_encoder(obj_in)
-        stmt = insert(self.model).values(
-            **obj_in_data)
-        result = db.execute(stmt)
-        db.commit()
+        stmt = insert(self.model).values(**obj_in_data)
+        result = await db.execute(stmt)
+        await db.commit()
         return result.inserted_primary_key[0]
 
-    def update(
-        self,
-        db: Session,
-        *,
-        id: int,
-        obj_in: Union[UpdateSchemaType, Dict[str, Any]]
+    async def update(
+        self, db: Session, *, id: int, obj_in: Union[UpdateSchemaType, Dict[str, Any]]
     ) -> ModelType:
         if isinstance(obj_in, dict):
             update_data = obj_in
         else:
             update_data = obj_in.dict(exclude_unset=True)
 
-        stmt = (
-            update(self.model).where(self.model.id == id).
-            values(**update_data)
-        )
-        result = db.execute(stmt)
-        db.commit()
+        stmt = update(self.model).where(self.model.id == id).values(**update_data)
+        result = await db.execute(stmt)
+        await db.commit()
         return result
 
-    def remove(self, db: Session, *, id: int) -> ModelType:
-        obj = db.query(self.model).get(id)
-        db.delete(obj)
-        db.commit()
+    async def remove(self, db: Session, *, id: int) -> ModelType:
+        obj = await db.query(self.model).get(id)
+        await db.delete(obj)
+        await db.commit()
         return obj
